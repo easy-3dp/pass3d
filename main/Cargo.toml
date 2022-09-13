@@ -1,0 +1,18 @@
+[package]
+name = "pass3d"
+version = "0.1.0"
+authors = ["3Dpass"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+structopt = "0.3.13"
+libc = "0.2"
+parity-scale-codec = '2.0'
+rand = { version = "0.8", features = ["small_rng"] }
+sha3 = "0.9"
+p3d = { git = "https://github.com/3Dpass/p3d", tag = "v0.5.0" }
+
+[lib]
+crate-type = ["cdylib"]
