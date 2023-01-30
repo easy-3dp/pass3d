@@ -1,39 +1,40 @@
-use libc::memset;
-use libc::{c_void, c_char, memcpy};
-use std::convert::TryInto;
-use std::ffi::CStr;
-use std::panic;
+use libc::{c_void, c_int, memcpy, memset};
 
 #[no_mangle]
-pub unsafe extern fn gethash(s:*const c_char, pre:*const c_char, out:*mut c_void) -> i32 {
+pub unsafe extern fn p3d_process(_rock_obj_params:rock_obj::RockObjParams, _pre:*mut c_void, function:c_int, _out_hash:*mut c_void, _out_poisitons:*mut c_void, _out_indices:*mut c_void, _out_normals:*mut c_void) -> i32 {
 
-	if let Ok(data) = CStr::from_ptr(s).to_str() {
-		let data = data.as_bytes();
-		let _pre;
-		if pre.is_null() {
-			_pre = Option::None;
-		}else{
-			_pre = CStr::from_ptr(pre).to_bytes()[0..4].try_into().ok();
-		}
+	let mut geo = rock_obj::Rock(_rock_obj_params);
 
-		let result = panic::catch_unwind(||{
-			p3d::p3d_process(data, p3d::AlgoType::Grid2d, 8, 66, _pre)
-		});
-		if let Ok(res) = result {
-			if let Ok(v) = res {
-				let len = v.len() as i32;
-				memset(out, 0, 640);
-				let mut address = out;
-				for d in v {
-					let tmp = d.as_ptr() as *const c_void;
-					memcpy(address, tmp, 64);
-					address = address.add(64);
-				}
-				return len;
-			}
-		}
-	}
+	geo.wavefront_loadobj();
+	geo.ComputeVertexNormals();
+
+	let data_str = geo.parse();
+	let data = data_str.as_bytes();
+
+	let pre:[u8; 4] = [0, 0, 0, 0];
+	memcpy(pre.as_ptr() as *mut c_void, _pre, 4);
+
+	let res = p3d::p3d_process(data, p3d::AlgoType::Grid2dV2, 8, 12, Some(pre));
 	
-	-1
+	if let Ok(v) = res {
+		if v.len() > 0 {
+			memcpy(_out_poisitons, geo.positions.as_ptr() as *const c_void, 14448);
+			memcpy(_out_indices,   geo.indices  .as_ptr() as *const c_void, 14400);
+			memcpy(_out_normals,   geo.normals  .as_ptr() as *const c_void, 14448);
+			memcpy(_out_hash, v[0].as_ptr() as *const c_void, 64);
+			1
+		} else {
+			0
+		}
+	} else {
+		0
+	}
 
+}
+
+#[no_mangle]
+pub unsafe extern fn get_version(str:*mut c_void, function:c_int) -> i32 {
+	let bytes = "Official algorithm 0.6.0 (Grid2d_v2)".as_bytes();
+	memcpy(str, bytes.as_ptr() as *const c_void, bytes.len());
+	bytes.len() as i32
 }
