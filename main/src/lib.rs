@@ -1,4 +1,4 @@
-use libc::{c_void, c_int, memcpy, memset};
+use libc::{c_void, c_int, memcpy};
 
 #[no_mangle]
 pub unsafe extern fn p3d_process(_rock_obj_params:rock_obj::RockObjParams, _pre:*mut c_void, function:c_int, _out_hash:*mut c_void, _out_poisitons:*mut c_void, _out_indices:*mut c_void, _out_normals:*mut c_void) -> i32 {
