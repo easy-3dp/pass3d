@@ -34,7 +34,7 @@ pub unsafe extern fn p3d_process(_rock_obj_params:rock_obj::RockObjParams, _pre:
 
 #[no_mangle]
 pub unsafe extern fn get_version(str:*mut c_void, function:c_int) -> i32 {
-	let bytes = "Official algorithm 0.6.0 (Grid2d_v2)".as_bytes();
+	let bytes = "Official algorithm 0.6.2 (Grid2d_v2)".as_bytes();
 	memcpy(str, bytes.as_ptr() as *const c_void, bytes.len());
 	bytes.len() as i32
 }
